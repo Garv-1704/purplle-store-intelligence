@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import json
+import plotly.express as px
 
 st.set_page_config(
     page_title="Purplle Store Intelligence",
@@ -118,7 +119,7 @@ c1.metric("Top Brand", top_brand)
 c2.metric("Top Category", top_category)
 
 # =====================
-# CHARTS
+# TOP BRANDS CHART
 # =====================
 
 st.divider()
@@ -130,9 +131,35 @@ brand_sales = (
     .sum()
     .sort_values(ascending=False)
     .head(10)
+    .reset_index()
 )
 
-st.bar_chart(brand_sales)
+fig1 = px.bar(
+    brand_sales,
+    x="brand_name",
+    y="total_amount",
+    title="Top 10 Brands by Revenue"
+)
+
+fig1.update_layout(
+    dragmode=False
+)
+
+fig1.update_xaxes(
+    tickangle=-45
+)
+
+st.plotly_chart(
+    fig1,
+    use_container_width=True,
+    config={
+        "scrollZoom": False
+    }
+)
+
+# =====================
+# TOP CATEGORIES CHART
+# =====================
 
 st.subheader("Top Categories")
 
@@ -140,9 +167,27 @@ category_sales = (
     sales_df.groupby("dep_name")["total_amount"]
     .sum()
     .sort_values(ascending=False)
+    .reset_index()
 )
 
-st.bar_chart(category_sales)
+fig2 = px.bar(
+    category_sales,
+    x="dep_name",
+    y="total_amount",
+    title="Revenue by Category"
+)
+
+fig2.update_layout(
+    dragmode=False
+)
+
+st.plotly_chart(
+    fig2,
+    use_container_width=True,
+    config={
+        "scrollZoom": False
+    }
+)
 
 # =====================
 # CAMERA EVENTS
@@ -170,6 +215,9 @@ st.subheader("Recent Events")
 
 if len(events) > 0:
     event_df = pd.DataFrame(events)
-    st.dataframe(event_df.tail(20), use_container_width=True)
+    st.dataframe(
+        event_df.tail(20),
+        use_container_width=True
+    )
 else:
     st.info("No events available")
