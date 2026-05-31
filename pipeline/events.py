@@ -1,17 +1,32 @@
 from ultralytics import YOLO
 import json
+import sys
 from datetime import datetime
+
+# Usage:
+# python pipeline/events.py "CAM 1"
+
+CAMERA = sys.argv[1]
+
+CAMERA_CONFIG = {
+    "CAM 1": 1200,
+    "CAM 2": 1070,
+    "CAM 3": 1620,
+    "CAM 4": 1000,
+    "CAM 5": 1100
+}
+
+ENTRY_LINE_X = CAMERA_CONFIG[CAMERA]
 
 model = YOLO("yolov8n.pt")
 
 results = model.track(
-    source="data/CAM 3.mp4",
+    source=f"data/{CAMERA}.mp4",
     tracker="bytetrack.yaml",
     persist=True,
     stream=True
 )
 
-ENTRY_LINE_X = 1620
 BUFFER = 5
 
 LEFT_ZONE = ENTRY_LINE_X - BUFFER
@@ -36,19 +51,27 @@ for result in results:
         x1, y1, x2, y2 = box
 
         center_x = (x1 + x2) / 2
+        center_y = (y1 + y2) / 2
 
-        
-
-        print(f"Track {int(track_id)} center_x={center_x:.1f}")
+        print(
+            f"Track {int(track_id)} "
+            f"x={center_x:.1f} "
+            f"y={center_y:.1f}"
+        )
 
         previous_x = last_position.get(track_id)
+
         if previous_x is not None:
             if abs(center_x - previous_x) > 20:
                 print(
                     f"CROSSING CANDIDATE -> Track {int(track_id)} "
                     f"prev={previous_x:.1f} current={center_x:.1f}"
-                    )
-        print(f"Track {int(track_id)} prev={previous_x} current={center_x}")
+                )
+
+        print(
+            f"Track {int(track_id)} "
+            f"prev={previous_x} current={center_x}"
+        )
 
         if previous_x is not None:
 
@@ -72,7 +95,7 @@ for result in results:
                 event = {
                     "visitor_id": f"VIS_{int(track_id)}",
                     "event_type": "ENTRY",
-                    "camera": "CAM_3",
+                    "camera": CAMERA.replace(" ", "_"),
                     "timestamp": now.isoformat()
                 }
 
@@ -95,7 +118,7 @@ for result in results:
                 event = {
                     "visitor_id": f"VIS_{int(track_id)}",
                     "event_type": "EXIT",
-                    "camera": "CAM_3",
+                    "camera": CAMERA.replace(" ", "_"),
                     "timestamp": now.isoformat()
                 }
 
