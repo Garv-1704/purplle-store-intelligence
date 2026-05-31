@@ -9,6 +9,10 @@ st.set_page_config(
 
 st.title("🛍️ Purplle Store Intelligence Dashboard")
 
+# =====================
+# EVENTS ANALYTICS
+# =====================
+
 entries = 0
 exits = 0
 
@@ -42,17 +46,107 @@ try:
                 exits += 1
 
 except FileNotFoundError:
-    st.error("events.jsonl not found")
+    pass
 
 active_visitors = entries - exits
 
-st.subheader("Store Overview")
+# =====================
+# SALES ANALYTICS
+# =====================
+
+sales_df = pd.read_csv(
+    "sales_data/Brigade_Bangalore_10_April_26 (1)bc6219c.csv"
+)
+
+revenue = sales_df["total_amount"].sum()
+transactions = sales_df["invoice_number"].nunique()
+units_sold = sales_df["qty"].sum()
+abv = revenue / transactions
+
+top_brand = (
+    sales_df.groupby("brand_name")["total_amount"]
+    .sum()
+    .sort_values(ascending=False)
+    .idxmax()
+)
+
+top_category = (
+    sales_df.groupby("dep_name")["total_amount"]
+    .sum()
+    .sort_values(ascending=False)
+    .idxmax()
+)
+
+# =====================
+# FOOTFALL
+# =====================
+
+st.subheader("Footfall Analytics")
 
 col1, col2, col3 = st.columns(3)
 
-col1.metric("Total Entries", entries)
-col2.metric("Total Exits", exits)
+col1.metric("Entries", entries)
+col2.metric("Exits", exits)
 col3.metric("Active Visitors", active_visitors)
+
+# =====================
+# SALES KPIs
+# =====================
+
+st.divider()
+
+st.subheader("Sales Analytics")
+
+col1, col2, col3, col4 = st.columns(4)
+
+col1.metric("Revenue", f"₹{revenue:,.0f}")
+col2.metric("Transactions", transactions)
+col3.metric("Units Sold", int(units_sold))
+col4.metric("Avg Bill Value", f"₹{abv:,.0f}")
+
+# =====================
+# INSIGHTS
+# =====================
+
+st.divider()
+
+st.subheader("Business Insights")
+
+c1, c2 = st.columns(2)
+
+c1.metric("Top Brand", top_brand)
+c2.metric("Top Category", top_category)
+
+# =====================
+# CHARTS
+# =====================
+
+st.divider()
+
+st.subheader("Top Brands")
+
+brand_sales = (
+    sales_df.groupby("brand_name")["total_amount"]
+    .sum()
+    .sort_values(ascending=False)
+    .head(10)
+)
+
+st.bar_chart(brand_sales)
+
+st.subheader("Top Categories")
+
+category_sales = (
+    sales_df.groupby("dep_name")["total_amount"]
+    .sum()
+    .sort_values(ascending=False)
+)
+
+st.bar_chart(category_sales)
+
+# =====================
+# CAMERA EVENTS
+# =====================
 
 st.divider()
 
@@ -66,12 +160,16 @@ c3.metric("CAM 3", camera_counts["CAM_3"])
 c4.metric("CAM 4", camera_counts["CAM_4"])
 c5.metric("CAM 5", camera_counts["CAM_5"])
 
+# =====================
+# EVENT TABLE
+# =====================
+
 st.divider()
 
 st.subheader("Recent Events")
 
 if len(events) > 0:
-    df = pd.DataFrame(events)
-    st.dataframe(df.tail(20), use_container_width=True)
+    event_df = pd.DataFrame(events)
+    st.dataframe(event_df.tail(20), use_container_width=True)
 else:
     st.info("No events available")
