@@ -64,6 +64,10 @@ transactions = sales_df["invoice_number"].nunique()
 units_sold = sales_df["qty"].sum()
 abv = revenue / transactions
 
+conversion_rate = (
+    transactions / max(entries, 1)
+) * 100
+
 top_brand = (
     sales_df.groupby("brand_name")["total_amount"]
     .sum()
@@ -98,12 +102,13 @@ st.divider()
 
 st.subheader("Sales Analytics")
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4, col5 = st.columns(5)
 
 col1.metric("Revenue", f"₹{revenue:,.0f}")
 col2.metric("Transactions", transactions)
 col3.metric("Units Sold", int(units_sold))
 col4.metric("Avg Bill Value", f"₹{abv:,.0f}")
+col5.metric("Conversion Rate", f"{conversion_rate:.1f}%")
 
 # =====================
 # INSIGHTS
