@@ -1,12 +1,23 @@
 from ultralytics import YOLO
 import json
 import sys
+import uuid
 from datetime import datetime
 
 # Usage:
 # python pipeline/events.py "CAM 1"
 
 CAMERA = sys.argv[1]
+
+STORE_ID = "PURPLLE_BLR_001"
+
+CAMERA_ZONES = {
+    "CAM 1": "STORE_FLOOR",
+    "CAM 2": "MAKEUP_ZONE",
+    "CAM 3": "ENTRANCE",
+    "CAM 4": "STORAGE_ROOM",
+    "CAM 5": "BILLING_ZONE"
+}
 
 CAMERA_CONFIG = {
     "CAM 1": 1200,
@@ -52,26 +63,12 @@ for result in results:
 
         center_x = (x1 + x2) / 2
         center_y = (y1 + y2) / 2
-
         print(
             f"Track {int(track_id)} "
-            f"x={center_x:.1f} "
-            f"y={center_y:.1f}"
-        )
+            f"center_x={center_x:.1f}"
+            )
 
         previous_x = last_position.get(track_id)
-
-        if previous_x is not None:
-            if abs(center_x - previous_x) > 20:
-                print(
-                    f"CROSSING CANDIDATE -> Track {int(track_id)} "
-                    f"prev={previous_x:.1f} current={center_x:.1f}"
-                )
-
-        print(
-            f"Track {int(track_id)} "
-            f"prev={previous_x} current={center_x}"
-        )
 
         if previous_x is not None:
 
@@ -93,10 +90,14 @@ for result in results:
             ):
 
                 event = {
+                    "event_id": str(uuid.uuid4()),
+                    "store_id": STORE_ID,
+                    "camera_id": CAMERA.replace(" ", "_"),
+                    "zone_id": CAMERA_ZONES[CAMERA],
                     "visitor_id": f"VIS_{int(track_id)}",
                     "event_type": "ENTRY",
-                    "camera": CAMERA.replace(" ", "_"),
-                    "timestamp": now.isoformat()
+                    "timestamp": now.isoformat(),
+                    "confidence": 0.95
                 }
 
                 print(event)
@@ -116,10 +117,14 @@ for result in results:
             ):
 
                 event = {
+                    "event_id": str(uuid.uuid4()),
+                    "store_id": STORE_ID,
+                    "camera_id": CAMERA.replace(" ", "_"),
+                    "zone_id": CAMERA_ZONES[CAMERA],
                     "visitor_id": f"VIS_{int(track_id)}",
                     "event_type": "EXIT",
-                    "camera": CAMERA.replace(" ", "_"),
-                    "timestamp": now.isoformat()
+                    "timestamp": now.isoformat(),
+                    "confidence": 0.95
                 }
 
                 print(event)
@@ -131,3 +136,5 @@ for result in results:
                 last_event_time[track_id] = now
 
         last_position[track_id] = center_x
+
+print(f"\nFinished processing {CAMERA}")

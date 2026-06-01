@@ -87,6 +87,10 @@ AI-powered retail analytics platform combining computer vision and sales intelli
 
 ![Zones](assets/zones.png)
 
+## System Architecture
+
+![Architecture](assets/architecture.png)
+
 detect.py      → testing only
 track.py       → actual CV pipeline
 events.py      → business events
