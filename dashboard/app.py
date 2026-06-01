@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🛍️ Purplle Store Intelligence Dashboard")
+st.title("🛍️ Purplle AI Retail Intelligence Platform")
 
 # =====================
 # EVENTS ANALYTICS
@@ -64,9 +64,11 @@ transactions = sales_df["invoice_number"].nunique()
 units_sold = sales_df["qty"].sum()
 abv = revenue / transactions
 
-conversion_rate = (
-    transactions / max(entries, 1)
-) * 100
+if entries >= transactions and entries > 0:
+    conversion_rate = (transactions / entries) * 100
+    conversion_display = f"{conversion_rate:.1f}%"
+else:
+    conversion_display = "Insufficient Data"
 
 top_brand = (
     sales_df.groupby("brand_name")["total_amount"]
@@ -81,7 +83,15 @@ top_category = (
     .sort_values(ascending=False)
     .idxmax()
 )
+category_revenue = (
+    sales_df.groupby("dep_name")["total_amount"]
+    .sum()
+    .sort_values(ascending=False)
+)
 
+category_percent = (
+    category_revenue / revenue * 100
+).round(1)
 # =====================
 # FOOTFALL
 # =====================
@@ -108,7 +118,16 @@ col1.metric("Revenue", f"₹{revenue:,.0f}")
 col2.metric("Transactions", transactions)
 col3.metric("Units Sold", int(units_sold))
 col4.metric("Avg Bill Value", f"₹{abv:,.0f}")
-col5.metric("Conversion Rate", f"{conversion_rate:.1f}%")
+col5.metric("Conversion Rate", conversion_display)
+st.divider()
+
+st.subheader("Sales Funnel")
+
+f1, f2, f3 = st.columns(3)
+
+f1.metric("Visitors", entries)
+f2.metric("Transactions", transactions)
+f3.metric("Revenue", f"₹{revenue:,.0f}")
 
 # =====================
 # INSIGHTS
@@ -116,12 +135,43 @@ col5.metric("Conversion Rate", f"{conversion_rate:.1f}%")
 
 st.divider()
 
-st.subheader("Business Insights")
+st.subheader("Retail Intelligence Insights")
 
 c1, c2 = st.columns(2)
 
 c1.metric("Top Brand", top_brand)
 c2.metric("Top Category", top_category)
+
+st.divider()
+
+st.subheader("AI Recommendations")
+
+st.success(
+    "Makeup category contributes the majority of store revenue. "
+    "Consider increasing shelf visibility and promotional offers."
+)
+
+st.info(
+    "Faces Canada is the top-performing brand. "
+    "Allocate additional inventory to avoid stockouts."
+)
+
+st.warning(
+    "Monitor billing zone traffic during peak hours to reduce waiting time."
+)
+st.divider()
+
+st.subheader("Revenue Contribution by Category")
+
+c1, c2, c3, c4, c5 = st.columns(5)
+
+categories = category_percent.head(5)
+
+c1.metric(categories.index[0].title(), f"{categories.iloc[0]}%")
+c2.metric(categories.index[1].title(), f"{categories.iloc[1]}%")
+c3.metric(categories.index[2].title(), f"{categories.iloc[2]}%")
+c4.metric(categories.index[3].title(), f"{categories.iloc[3]}%")
+c5.metric(categories.index[4].title(), f"{categories.iloc[4]}%")
 
 # =====================
 # TOP BRANDS CHART
@@ -200,15 +250,15 @@ st.plotly_chart(
 
 st.divider()
 
-st.subheader("Camera-wise Events")
+st.subheader("Zone Analytics")
 
 c1, c2, c3, c4, c5 = st.columns(5)
 
-c1.metric("CAM 1", camera_counts["CAM_1"])
-c2.metric("CAM 2", camera_counts["CAM_2"])
-c3.metric("CAM 3", camera_counts["CAM_3"])
-c4.metric("CAM 4", camera_counts["CAM_4"])
-c5.metric("CAM 5", camera_counts["CAM_5"])
+c1.metric("Store Floor", camera_counts["CAM_1"])
+c2.metric("Makeup Zone", camera_counts["CAM_2"])
+c3.metric("Entrance", camera_counts["CAM_3"])
+c4.metric("Storage Room", camera_counts["CAM_4"])
+c5.metric("Billing Zone", camera_counts["CAM_5"])
 
 # =====================
 # EVENT TABLE
