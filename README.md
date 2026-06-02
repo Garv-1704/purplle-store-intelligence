@@ -16,6 +16,15 @@ An AI-powered retail intelligence platform combining computer vision and sales a
 - Conversion rate monitoring
 - AI recommendations
 
+## API Endpoints
+
+* GET /health
+* GET /stores/1/metrics
+* GET /stores/1/funnel
+* GET /stores/1/zones
+* GET /stores/1/insights
+* GET /stores/1/anomalies
+
 ## Camera Mapping
 CAM 1 → Store Floor
 CAM 2 → Makeup Zone

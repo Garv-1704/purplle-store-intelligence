@@ -1,0 +1,14 @@
+version: "3.9"
+
+services:
+  retail-intelligence:
+    build: .
+    container_name: purplle-retail-intelligence
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - .:/app
+
+    restart: unless-stopped
