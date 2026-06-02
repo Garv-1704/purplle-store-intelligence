@@ -62,11 +62,11 @@ for result in results:
         x1, y1, x2, y2 = box
 
         center_x = (x1 + x2) / 2
-        center_y = (y1 + y2) / 2
+
         print(
             f"Track {int(track_id)} "
             f"center_x={center_x:.1f}"
-            )
+        )
 
         previous_x = last_position.get(track_id)
 
@@ -81,13 +81,17 @@ for result in results:
                 (now - last_time).total_seconds() > COOLDOWN_SECONDS
             )
 
-            # ENTRY
+            # ENTRY / REENTRY
             if (
                 previous_x > RIGHT_ZONE and
                 center_x < LEFT_ZONE and
-                last_event.get(track_id) != "ENTRY" and
                 cooldown_ok
             ):
+
+                if last_event.get(track_id) == "EXIT":
+                    event_type = "REENTRY"
+                else:
+                    event_type = "ENTRY"
 
                 event = {
                     "event_id": str(uuid.uuid4()),
@@ -95,7 +99,7 @@ for result in results:
                     "camera_id": CAMERA.replace(" ", "_"),
                     "zone_id": CAMERA_ZONES[CAMERA],
                     "visitor_id": f"VIS_{int(track_id)}",
-                    "event_type": "ENTRY",
+                    "event_type": event_type,
                     "timestamp": now.isoformat(),
                     "confidence": 0.95
                 }
@@ -105,7 +109,7 @@ for result in results:
                 with open("events.jsonl", "a") as f:
                     f.write(json.dumps(event) + "\n")
 
-                last_event[track_id] = "ENTRY"
+                last_event[track_id] = event_type
                 last_event_time[track_id] = now
 
             # EXIT
