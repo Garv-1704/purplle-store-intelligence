@@ -1,10 +1,26 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 import json
 import pandas as pd
 
 app = FastAPI(
     title="Purplle Retail Intelligence API"
 )
+
+# =====================
+# EVENT MODEL
+# =====================
+
+class Event(BaseModel):
+    event_id: str
+    store_id: str
+    camera_id: str
+    zone_id: str
+    visitor_id: str
+    event_type: str
+    timestamp: str
+    confidence: float
+
 
 # =====================
 # HEALTH
@@ -16,6 +32,7 @@ def health():
         "status": "healthy"
     }
 
+
 # =====================
 # HOME
 # =====================
@@ -25,6 +42,23 @@ def home():
     return {
         "status": "running"
     }
+
+
+# =====================
+# EVENT INGESTION
+# =====================
+
+@app.post("/events/ingest")
+def ingest_event(event: Event):
+
+    with open("events.jsonl", "a") as f:
+        f.write(event.model_dump_json() + "\n")
+
+    return {
+        "status": "success",
+        "event_id": event.event_id
+    }
+
 
 # =====================
 # METRICS
@@ -50,6 +84,9 @@ def metrics():
                 elif event["event_type"] == "EXIT":
                     exits += 1
 
+                elif event["event_type"] == "REENTRY":
+                    entries += 1
+
     except FileNotFoundError:
         pass
 
@@ -61,6 +98,7 @@ def metrics():
         "exits": exits,
         "active_visitors": active_visitors
     }
+
 
 # =====================
 # FUNNEL
@@ -79,7 +117,7 @@ def funnel():
 
                 event = json.loads(line)
 
-                if event["event_type"] == "ENTRY":
+                if event["event_type"] in ["ENTRY", "REENTRY"]:
                     entries += 1
 
     except FileNotFoundError:
@@ -98,10 +136,11 @@ def funnel():
         transactions = 0
 
     estimated_visitors = max(entries, transactions)
+
     conversion_rate = (
         (transactions / estimated_visitors) * 100
         if estimated_visitors > 0 else 0
-        )
+    )
 
     return {
         "store_id": "PURPLLE_BLR_001",
@@ -109,6 +148,11 @@ def funnel():
         "transactions": transactions,
         "conversion_rate": round(conversion_rate, 2)
     }
+
+
+# =====================
+# ZONES
+# =====================
 
 @app.get("/stores/1/zones")
 def zones():
@@ -137,6 +181,10 @@ def zones():
         "zones": zone_counts
     }
 
+
+# =====================
+# INSIGHTS
+# =====================
 
 @app.get("/stores/1/insights")
 def insights():
@@ -172,6 +220,9 @@ def insights():
     }
 
 
+# =====================
+# ANOMALIES
+# =====================
 
 @app.get("/stores/1/anomalies")
 def anomalies():
