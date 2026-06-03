@@ -1,0 +1,7 @@
+{"event_type":"ENTRY","camera_id":"CAM_1"}
+{"event_type":"ENTRY","camera_id":"CAM_2"}
+{"event_type":"ENTRY","camera_id":"CAM_3"}
+{"event_type":"EXIT","camera_id":"CAM_3"}
+{"event_type":"REENTRY","camera_id":"CAM_1"}{"event_id": "5aaa5e2b-41b5-41c4-93cd-0d8d09aec52f", "store_id": "PURPLLE_BLR_001", "camera_id": "CAM_3", "zone_id": "ENTRANCE", "visitor_id": "VIS_154", "event_type": "ENTRY", "timestamp": "2026-06-02T23:35:06.941001", "confidence": 0.95}
+{"event_id": "bfa00856-c3ce-44e4-80eb-e62ffc8f0b78", "store_id": "PURPLLE_BLR_001", "camera_id": "CAM_3", "zone_id": "ENTRANCE", "visitor_id": "VIS_216", "event_type": "ENTRY", "timestamp": "2026-06-02T23:35:55.651192", "confidence": 0.95}
+{"event_id": "4efb527c-3e3c-4f8a-9945-a2565f97e7a2", "store_id": "PURPLLE_BLR_001", "camera_id": "CAM_3", "zone_id": "ENTRANCE", "visitor_id": "VIS_271", "event_type": "EXIT", "timestamp": "2026-06-02T23:36:49.922724", "confidence": 0.95}
