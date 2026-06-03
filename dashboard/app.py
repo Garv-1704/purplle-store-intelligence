@@ -35,7 +35,7 @@ try:
             event = json.loads(line)
             events.append(event)
 
-            camera = event.get("camera")
+            camera = event.get("camera_id", event.get("camera"))
 
             if camera in camera_counts:
                 camera_counts[camera] += 1
